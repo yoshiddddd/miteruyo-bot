@@ -1,0 +1,7 @@
+mecab-python3
+pandas
+wordcloud
+matplotlib
+japanize-matplotlib==1.1.3
+numpy
+pillow

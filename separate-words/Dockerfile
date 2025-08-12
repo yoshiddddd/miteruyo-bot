@@ -1,39 +1,38 @@
 FROM python:3.11-slim
-# PythonでMecabを使うためのライブラリ
-RUN pip install --no-cache-dir mecab-python3
 
-# タイムゾーン設定の対話を回避
+# タイムゾーン等の環境設定
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Asia/Tokyo
+WORKDIR /app
 
-# MeCabとその依存関係をインストール
+# MeCab, NEologd辞書、その他依存関係を一つのRUN命令でインストール・設定
 RUN apt-get update && apt-get install -y \
     mecab \
     mecab-ipadic-utf8 \
     libmecab-dev \
     git \
+    make \
     curl \
     file \
     xz-utils \
-    make \
     build-essential \
     sudo \
     fonts-noto-cjk \
-    && rm -rf /var/lib/apt/lists/*
-
-# NEologd辞書をインストール
-RUN git clone --depth 1 https://github.com/neologd/mecab-ipadic-neologd.git /tmp/neologd \
+    # NEologd辞書をクローンしてインストール
+    && git clone --depth 1 https://github.com/neologd/mecab-ipadic-neologd.git /tmp/neologd \
     && /tmp/neologd/bin/install-mecab-ipadic-neologd -n -y \
-     # デフォルト辞書を NEologd に向ける（mecabrc を上書き）
     && echo "dicdir = $(mecab-config --dicdir)/mecab-ipadic-neologd" > /etc/mecabrc \
     && cp /etc/mecabrc /usr/local/etc/mecabrc \
-    && rm -rf /tmp/neologd
+    # 後片付け
+    && rm -rf /tmp/neologd \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Dockerイメージに必要なファイルをコピー
+# Pythonライブラリのインストール
 COPY requirements.txt .
-RUN pip install -r requirements.txt
-# 出力ディレクトリを作成し、権限を設定
-RUN mkdir -p /app/output && chmod 777 /app/output
+RUN pip install --no-cache-dir -r requirements.txt
+# アプリケーションコードをコピー
 COPY . .
 
+# コンテナ起動時に実行するコマンド
 CMD ["python", "app/main.py"]

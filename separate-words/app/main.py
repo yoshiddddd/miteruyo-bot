@@ -7,10 +7,8 @@ import matplotlib.pyplot as plt
 import japanize_matplotlib
 import os
 
-# NEologdの辞書パス
-NEOLOGD_PATH = os.getenv("NEOLOGD_PATH", "/usr/lib/x86_64-linux-gnu/mecab/dic/mecab-ipadic-neologd")
 # MeCab Taggerの初期化
-mecab = MeCab.Tagger(f"-d {NEOLOGD_PATH}")
+mecab = MeCab.Tagger()
 
 # テスト用の文章リスト
 texts = [

@@ -40,11 +40,14 @@ for sentence in texts:
 # 解析結果をDataFrameに変換
 df = pd.DataFrame(data)
 
-# 自動詞を新リスト（filtered_words）に格納
+# 意味のある単語を新リスト（filtered_words）に格納
 filtered_words = []
+# 除外したい単語リスト
+STOP_WORDS = {"の", "そう", "ない", "いい", "ん", "とき", "よう", "これ", "こと","人","今","時","感じ","的","何","なん"}
+
 for i, row in df.iterrows():
     for root, part in zip(row["root"], row["part"]):
-        if part not in ["助詞", "助動詞"]:
+        if part in ["形容詞", "形容動詞", "名詞", "感動詞"] and root not in STOP_WORDS:
             filtered_words.append(root)
 
 # intransitiveの要素をスペース区切りで連結

@@ -43,11 +43,11 @@ df = pd.DataFrame(data)
 # 意味のある単語を新リスト（filtered_words）に格納
 filtered_words = []
 # 除外したい単語リスト
-STOP_WORDS = {"の", "そう", "ない", "いい", "ん", "とき", "よう", "これ", "こと","人","今","時","感じ","的","何","なん"}
+STOP_WORDS = {"の", "そう", "ない", "いい", "ん", "とき", "よう", "これ", "こと","人","今","時","感じ","的","何","なに","なん","化","他"}
 
 for i, row in df.iterrows():
     for root, part in zip(row["root"], row["part"]):
-        if part in ["形容詞", "形容動詞", "名詞", "感動詞"] and root not in STOP_WORDS:
+        if part in ["形容詞", "形容動詞", "名詞"] and root not in STOP_WORDS:
             filtered_words.append(root)
 
 # intransitiveの要素をスペース区切りで連結

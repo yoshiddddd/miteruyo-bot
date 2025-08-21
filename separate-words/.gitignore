@@ -8,3 +8,6 @@ __pycache__/
 # OSが自動生成するファイル
 .DS_Store
 Thumbs.db
+
+# outputファイルにできたワードクラウド画像をgithubにあげない
+output/

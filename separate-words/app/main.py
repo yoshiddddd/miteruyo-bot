@@ -11,6 +11,7 @@ import numpy as np
 from PIL import Image
 import discord
 from dotenv import load_dotenv
+from collections import Counter # 回数を数える
 
 # .envファイルから環境変数を読み込む
 load_dotenv()
@@ -22,40 +23,35 @@ DISCORD_CHANNEL_ID = int(os.getenv('DISCORD_CHANNEL_ID'))
 intents = discord.Intents.default()  # 最低限のみ
 client = discord.Client(intents=intents)  # どのイベントを扱えるか
 
-def create_wordcloud():
-    # MeCab Taggerの初期化
-    mecab = MeCab.Tagger()
+# MeCab Taggerの初期化
+mecab = MeCab.Tagger()
 
-    # テスト用の文章リスト
-    texts = [
-        "Peach.Techは成蹊大学の公認サークルです。大学設立当初、Peach.Techは存在していませんでした。",
-        "~~あとで編集し直して公開に変える~~　🆗",
-        "山月記ってみんな知ってる話じゃなかったんだ",
-        "iphoneとandroidで絵文字のタッチ全然違うから、可愛いつもりで使ってて全然可愛くないことが頻発する",
-        "さん、Peach.Techへようこそ！早速ですが以下のチャンネルで自己紹介をお願いします！🍑 https://discord.com/channels/",
-    ]
+# テスト用の文章リスト（textsの下にtexts.txtというファイルを作って好きな文を入れてね）
+with open("/app/texts/texts.txt", 'r', encoding='utf-8') as f:
+    texts = f.read().splitlines()
 
-    # 結果格納用
-    data = []
+# 結果格納用
+data = []
 
-    for sentence in texts:
-        words, roots, parts = [], [], []
-        node = mecab.parseToNode(sentence) # nodeは文節のこと
-        while node:
-            surface = node.surface # 表層形
-            features = node.feature.split(",") # mecabの出力結果をコンマ区切りで取得
-            base = features[6] if len(features) > 6 else "*" # 原形
-            pos = features[0] # 品詞
-            if surface:
-                words.append(surface)
-                roots.append(base)
-                parts.append(pos)
-            node = node.next
-        data.append({"sentence": sentence, "words": words, "root": roots, "part": parts})
+for sentence in texts:
+    words, roots, parts = [], [], []
+    node = mecab.parseToNode(sentence) # nodeは文節のこと
+    while node:
+        surface = node.surface # 表層形
+        features = node.feature.split(",") # mecabの出力結果をコンマ区切りで取得
+        base = features[6] if len(features) > 6 else "*" # 原形
+        pos = features[0] # 品詞
+        if surface:
+            words.append(surface)
+            roots.append(base)
+            parts.append(pos)
+        node = node.next
+    data.append({"sentence": sentence, "words": words, "root": roots, "part": parts})
 
-    # 解析結果をDataFrameに変換
-    df = pd.DataFrame(data)
+# 解析結果をDataFrameに変換
+df = pd.DataFrame(data)
 
+def filter():
     # 意味のある単語を新リスト（filtered_words）に格納
     filtered_words = []
     # 除外したい単語リスト
@@ -65,10 +61,12 @@ def create_wordcloud():
         for root, part in zip(row["root"], row["part"]):
             if part in ["形容詞", "形容動詞", "名詞"] and root not in STOP_WORDS:
                 filtered_words.append(root)
+    return filtered_words
 
-    # intransitiveの要素をスペース区切りで連結
-    text_for_wc = " ".join(filtered_words)
+# intransitiveの要素をスペース区切りで連結
+text_for_wc = " ".join(filter())
 
+def create_wordcloud():
     # 画像保存場所を作成
     OUTPUT_DIR = os.getenv("OUTPUT_DIR", "/app/output")
     os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -99,15 +97,28 @@ async def on_ready():
     print(f'{client.user} としてログインしました。')
     
     try:
+        word_counts = Counter(filter())
+        top_words = word_counts.most_common(3)
+        rank_strings = []
+        for rank, (word, count) in enumerate(top_words, 1):
+            if rank == 1:
+                crown = "👑 "  # 1位
+            else:
+                crown = "" 
+            rank_strings.append(f"{crown}{rank} 位  **{word}**  {count}回")
+        
+        ranking_text = "\n".join(rank_strings)
+        final_message = f"先月のぴちてくトレンドワードは\n## {ranking_text}\nでした！"
+
         image_path = create_wordcloud()
         channel = client.get_channel(DISCORD_CHANNEL_ID)
-        
+
         if channel:
             await channel.send(
-                f"今月の流行語を視覚化しました！ ({datetime.now().strftime('%Y-%m-%d %H:%M')})", 
+                final_message,
                 file=discord.File(image_path)
             )
-            print(f"チャンネル '{channel.name}' に画像を投稿しました。")
+            print(f"チャンネル '{channel.name}' にメッセージと画像を投稿しました。")
         else:
             print(f"エラー: チャンネルID {DISCORD_CHANNEL_ID} が見つかりません。")
             
@@ -115,7 +126,6 @@ async def on_ready():
         print(f"エラーが発生しました: {e}")
         
     finally:
-        # 投稿が終わったらBotを終了する
         await client.close()
 
 # Botを実行

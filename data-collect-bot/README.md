@@ -13,8 +13,7 @@
 
   ## 2. psqlコマンドを使用:
   PostgreSQLコンテナに接続
-  docker exec -it data-collect-postgres psql
-  -U admin -d datacollect
+  docker exec -it data-collect-postgres psql -U admin -d datacollect
 
  SQLクエリを実行
   SELECT * FROM users;

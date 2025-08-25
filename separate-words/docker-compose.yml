@@ -5,3 +5,5 @@ services:
     volumes:
       - ./output:/app/output
       - ./logo:/app/logo
+    env_file:
+      - .env

@@ -11,6 +11,3 @@ Thumbs.db
 
 # outputファイルにできたワードクラウド画像をgithubにあげない
 output/
-
-# textsをgithubにあげない
-texts/

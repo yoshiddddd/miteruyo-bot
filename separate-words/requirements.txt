@@ -7,3 +7,4 @@ numpy
 pillow # 画像処理ライブラリ（PIL）
 discord.py
 python-dotenv # 環境変数を扱う
+emoji

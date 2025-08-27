@@ -11,7 +11,9 @@ import numpy as np
 from PIL import Image
 import discord
 from dotenv import load_dotenv
-from collections import Counter # 回数を数える
+from collections import Counter
+import emoji
+import string
 
 # .envファイルから環境変数を読み込む
 load_dotenv()
@@ -106,10 +108,10 @@ async def on_ready():
                 crown = "👑 "  # 1位
             else:
                 crown = "" 
-            rank_strings.append(f"{crown}{rank} 位  **{word}**  {count}回")
+            rank_strings.append(f"{crown}{rank} 位  「**{word}**」  {count}回")
         
         ranking_text = "\n".join(rank_strings)
-        final_message = f"先月のぴちてくトレンドワードは\n## {ranking_text}\nでした！"
+        final_message = f"🍑先月のぴちてくトレンドワードは…🗣️\n## {ranking_text}\n\nでした！"
 
         image_path = create_wordcloud()
         channel = client.get_channel(DISCORD_CHANNEL_ID)

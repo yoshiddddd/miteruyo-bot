@@ -1,5 +1,6 @@
 -- Create tables based on ER diagram
 
+
 -- Categories table
 CREATE TABLE IF NOT EXISTS categories (
     category_id BIGINT PRIMARY KEY,

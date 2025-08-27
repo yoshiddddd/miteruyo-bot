@@ -1,10 +1,8 @@
 version: '3.8'
 
 services:
-  data-collect-bot:
-    build:
-      context: ./data-collect-bot
-      dockerfile: Dockerfile
+  postgres:
+    image: postgres:13
     container_name: data-collect-postgres
     environment:
       POSTGRES_DB: datacollect
@@ -14,6 +12,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./data-collect-bot/init-scripts:/docker-entrypoint-initdb.d
     networks:
       - miteruyo-network
 
@@ -23,7 +22,7 @@ services:
       dockerfile: Dockerfile
     container_name: separate-words-app
     depends_on:
-      - data-collect-bot
+      - postgres
     volumes:
       - ./separate-words/texts.txt:/app/texts.txt:ro
       - ./separate-words/.env:/app/.env:ro

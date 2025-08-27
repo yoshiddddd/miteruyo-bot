@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  data-collect-bot:
+    build:
+      context: ./data-collect-bot
+      dockerfile: Dockerfile
+    container_name: data-collect-postgres
+    environment:
+      POSTGRES_DB: datacollect
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - miteruyo-network
+
+  separate-words:
+    build:
+      context: ./separate-words
+      dockerfile: Dockerfile
+    container_name: separate-words-app
+    depends_on:
+      - data-collect-bot
+    volumes:
+      - ./separate-words/texts.txt:/app/texts.txt:ro
+      - ./separate-words/.env:/app/.env:ro
+    networks:
+      - miteruyo-network
+    command: tail -f /dev/null
+
+volumes:
+  postgres_data:
+
+networks:
+  miteruyo-network:
+    driver: bridge

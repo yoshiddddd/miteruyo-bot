@@ -1,4 +1,4 @@
-.PHONY: help up build py logs stop clean restart down
+.PHONY: help up build py bot logs stop clean restart down
 
 # デフォルトターゲット
 help:
@@ -6,6 +6,7 @@ help:
 	@echo "  make up      - Build and start all containers"
 	@echo "  make build   - Build all Docker images"
 	@echo "  make py      - Execute separate-words main.py"
+	@echo "  make bot     - Start data-collect-bot with Dockerfile.bot"
 	@echo "  make logs    - Show all container logs"
 	@echo "  make stop    - Stop all containers"
 	@echo "  make down    - Stop and remove all containers"
@@ -27,6 +28,20 @@ py:
 	@echo "Executing main.py..."
 	docker-compose exec separate-words python app/main.py
 
+# data-collect-botをDockerfile.botで起動
+bot:
+	@echo "Starting data-collect-bot with Dockerfile.bot..."
+	@docker stop data-collect-bot 2>/dev/null || true
+	@docker rm data-collect-bot 2>/dev/null || true
+	docker build -f data-collect-bot/Dockerfile.bot -t data-collect-bot:latest data-collect-bot/
+	docker run -d --name data-collect-bot --env-file data-collect-bot/.env \
+		-e DB_HOST=data-collect-postgres \
+		-e DB_PORT=5432 \
+		-e DB_USER=admin \
+		-e DB_PASSWORD=password123 \
+		-e DB_NAME=datacollect \
+		--network miteruyo-bot_miteruyo-network data-collect-bot:latest
+
 database:
 	docker exec -it data-collect-postgres psql -U admin -d datacollect
 # 全コンテナのログを表示
@@ -39,6 +54,8 @@ stop:
 
 # 全コンテナを停止・削除
 down:
+	@docker stop data-collect-bot 2>/dev/null || true
+	@docker rm data-collect-bot 2>/dev/null || true
 	docker-compose down
 
 # コンテナとイメージを削除

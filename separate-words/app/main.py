@@ -18,6 +18,7 @@ load_dotenv()
 # 環境変数からトークンとチャンネルIDを取得
 DISCORD_BOT_TOKEN = os.getenv('DISCORD_BOT_TOKEN')
 DISCORD_CHANNEL_ID = int(os.getenv('DISCORD_CHANNEL_ID'))
+# DISCORD_CHANNEL_ID = os.getenv('DISCORD_CHANNEL_ID')
 
 # Discord Botの権限設定
 intents = discord.Intents.default()  # 最低限のみ

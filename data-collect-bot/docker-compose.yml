@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: data-collect-postgres
+    environment:
+      POSTGRES_DB: datacollect
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password123
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+      - ./data:/data
+    restart: unless-stopped
+    networks:
+      - data-collect-network
+
+  adminer:
+    image: adminer
+    container_name: data-collect-adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    networks:
+      - data-collect-network
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+
+networks:
+  data-collect-network:
+    driver: bridge

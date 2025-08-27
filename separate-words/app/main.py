@@ -12,6 +12,8 @@ from PIL import Image
 import discord
 from dotenv import load_dotenv
 from collections import Counter
+import emoji
+import string
 
 # .envファイルから環境変数を読み込む
 load_dotenv()

@@ -31,8 +31,8 @@ py:
 # data-collect-botをDockerfile.botで起動
 bot:
 	@echo "Starting data-collect-bot with Dockerfile.bot..."
-	@docker stop data-collect-bot 2>/dev/null || true
-	@docker rm data-collect-bot 2>/dev/null || true
+# 	@docker stop data-collect-bot 2>/dev/null || true
+# 	@docker rm data-collect-bot 2>/dev/null || true
 	docker build -f data-collect-bot/Dockerfile.bot -t data-collect-bot:latest data-collect-bot/
 	docker run -d --name data-collect-bot --env-file data-collect-bot/.env \
 		-e DB_HOST=data-collect-postgres \
@@ -54,8 +54,8 @@ stop:
 
 # 全コンテナを停止・削除
 down:
-	@docker stop data-collect-bot 2>/dev/null || true
-	@docker rm data-collect-bot 2>/dev/null || true
+# 	@docker stop data-collect-bot 2>/dev/null || true
+# 	@docker rm data-collect-bot 2>/dev/null || true
 	docker-compose down
 
 # コンテナとイメージを削除

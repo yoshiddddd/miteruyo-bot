@@ -30,6 +30,23 @@ services:
       - miteruyo-network
     command: tail -f /dev/null
 
+  discord-bot:
+    build:
+      context: ./data-collect-bot
+      dockerfile: Dockerfile
+    container_name: discord-bot-app
+    depends_on:
+      - postgres
+    environment:
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - DB_HOST=postgres          
+      - DB_PORT=5432
+      - DB_USER=admin
+      - DB_PASSWORD=password123
+      - DB_NAME=datacollect
+    networks:
+      - miteruyo-network
+
 volumes:
   postgres_data:
 

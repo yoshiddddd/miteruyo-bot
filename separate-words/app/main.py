@@ -13,7 +13,6 @@ import discord
 from dotenv import load_dotenv
 from collections import Counter
 import emoji
-import string
 from get_data import get_db_connection
 
 def fetch_data(conn):
@@ -22,12 +21,6 @@ def fetch_data(conn):
     try:
         with conn.cursor() as cur:
             cur.execute("SELECT message_id, user_id, content, channel_id, created_at FROM messages;")
-            print("\n--- messageテーブルから取得したデータ ---")
-            rows = cur.fetchall()
-            for row in rows:
-                print(f"ID: {row[0]}, CONTENT: {row[2]}, TIME: {row[4]}")
-            print("------------------------------------")
-
     except Exception as e:
         print(f"データ取得中にエラーが発生しました: {e}")
 
@@ -75,7 +68,27 @@ if not messages:
     print("データベースからメッセージが取得できませんでした。")
     exit(1)
 
-for sentence in messages:
+# 絵文字と記号・文章をあらかじめ分ける
+def separate_by_type(messages):
+    text_list = []
+    emoji_list = []
+    
+    for sentence in messages:
+        texts = []
+        emojis = []
+        for char in sentence:
+            if emoji.is_emoji(char):
+                emojis.append(char)
+            elif  not char.isspace(): # 空白文字は無視
+                texts.append(char)
+
+        text_list.append("".join(texts))
+        emoji_list.append("".join(emojis))
+
+    return text_list, emoji_list
+text_list, emoji_list = separate_by_type(messages)
+
+for sentence in text_list:
     words, roots, parts = [], [], []
     node = mecab.parseToNode(sentence) # nodeは文節のこと
     while node:

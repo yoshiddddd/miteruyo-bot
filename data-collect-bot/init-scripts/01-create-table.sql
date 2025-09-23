@@ -3,7 +3,7 @@
 
 -- Categories table
 CREATE TABLE IF NOT EXISTS categories (
-    category_id BIGINT PRIMARY KEY,
+    category_id VARCHAR(256) PRIMARY KEY,
     category_name VARCHAR(256) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -11,36 +11,37 @@ CREATE TABLE IF NOT EXISTS categories (
 
 -- Channels table
 CREATE TABLE IF NOT EXISTS channels (
-    channel_id BIGINT PRIMARY KEY,
+    channel_id VARCHAR(256) PRIMARY KEY,
     channel_name VARCHAR(256) NOT NULL,
-    category_id BIGINT REFERENCES categories(category_id),
+    category_id VARCHAR(256) REFERENCES categories(category_id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Users table
 CREATE TABLE IF NOT EXISTS users (
-    user_id BIGINT PRIMARY KEY,
-    user_name VARCHAR(256) NOT NULL,
+    user_id VARCHAR(256) PRIMARY KEY,
+    username VARCHAR(256) NOT NULL,          -- @username (英数字のID)
+    display_name VARCHAR(256),                -- 表示名（設定されている場合）
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Messages table
 CREATE TABLE IF NOT EXISTS messages (
-    message_id BIGINT PRIMARY KEY,
-    user_id BIGINT REFERENCES users(user_id),
+    message_id VARCHAR(256) PRIMARY KEY,
+    user_id VARCHAR(256) REFERENCES users(user_id),
     content VARCHAR(256),
-    channel_id BIGINT REFERENCES channels(channel_id),
+    channel_id VARCHAR(256) REFERENCES channels(channel_id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Reactions table
 CREATE TABLE IF NOT EXISTS reactions (
-    reaction_id BIGINT PRIMARY KEY,
-    user_id BIGINT REFERENCES users(user_id),
-    message_id BIGINT REFERENCES messages(message_id),
+    reaction_id VARCHAR(256) PRIMARY KEY,
+    user_id VARCHAR(256) REFERENCES users(user_id),
+    message_id VARCHAR(256) REFERENCES messages(message_id),
     emoji VARCHAR(256),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

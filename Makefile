@@ -1,4 +1,4 @@
-.PHONY: help up build py bot logs stop clean restart down
+.PHONY: help up build py bot logs stop clean restart down cleanup-cache cleanup-volumes
 
 # デフォルトターゲット
 help:
@@ -12,6 +12,8 @@ help:
 	@echo "  make down    - Stop and remove all containers"
 	@echo "  make clean   - Stop, remove containers and images"
 	@echo "  make restart - Restart all containers"
+	@echo "  make cleanup-cache - Clean up Docker build cache and unused resources"
+	@echo "  make cleanup-volumes - Clean up Docker volumes (CAUTION: removes data)"
 
 # 全コンテナをビルドして起動
 up:
@@ -31,8 +33,8 @@ py:
 # data-collect-botをDockerfile.botで起動
 bot:
 	@echo "Starting data-collect-bot with Dockerfile.bot..."
-# 	@docker stop data-collect-bot 2>/dev/null || true
-# 	@docker rm data-collect-bot 2>/dev/null || true
+	@docker stop data-collect-bot 2>/dev/null || true
+	@docker rm data-collect-bot 2>/dev/null || true
 	docker build -f data-collect-bot/Dockerfile.bot -t data-collect-bot:latest data-collect-bot/
 	docker run -d --name data-collect-bot --env-file data-collect-bot/.env \
 		-e DB_HOST=data-collect-postgres \
@@ -54,9 +56,9 @@ stop:
 
 # 全コンテナを停止・削除
 down:
-# 	@docker stop data-collect-bot 2>/dev/null || true
-# 	@docker rm data-collect-bot 2>/dev/null || true
-	docker-compose down
+	@docker stop data-collect-bot 2>/dev/null || true
+	@docker rm data-collect-bot 2>/dev/null || true
+	docker-compose down -v
 
 # コンテナとイメージを削除
 clean:
@@ -65,3 +67,19 @@ clean:
 
 # 全コンテナを再起動
 restart: down up
+
+# Dockerキャッシュと不要なリソースを削除（安全）
+cleanup-cache:
+	@echo "Cleaning up Docker build cache and unused resources..."
+	docker system prune -f
+	docker image prune -f
+	docker builder prune -f
+	@echo "Docker cache cleanup completed!"
+
+# Dockerボリュームを削除（注意：データが削除される）
+cleanup-volumes:
+	@echo "WARNING: This will remove all unused Docker volumes and their data!"
+	@echo "Press Ctrl+C to cancel, or wait 5 seconds to continue..."
+	@sleep 5
+	docker volume prune -f
+	@echo "Docker volumes cleanup completed!"

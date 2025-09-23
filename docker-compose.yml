@@ -33,12 +33,13 @@ services:
   discord-bot:
     build:
       context: ./data-collect-bot
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.bot
     container_name: discord-bot-app
     depends_on:
       - postgres
+    env_file:
+      - ./data-collect-bot/.env
     environment:
-      - DISCORD_TOKEN=${DISCORD_TOKEN}
       - DB_HOST=postgres          
       - DB_PORT=5432
       - DB_USER=admin

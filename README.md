@@ -1,3 +1,6 @@
+## 概要
+サークル内Discordサーバに配置するbot.
+サーバー内のメッセージやリアクションを監視し、postgresqlデータベースへ記録する。
 ## mecabおよびpostgresqlコンテナの起動
 make up
 ## DiscordBotの起動

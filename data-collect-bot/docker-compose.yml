@@ -8,6 +8,7 @@ services:
       POSTGRES_DB: datacollect
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password123
+      POSTGRES_HOST: data-collect-bot
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
     ports:
       - "5432:5432"

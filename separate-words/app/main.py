@@ -13,7 +13,20 @@ import discord
 from dotenv import load_dotenv
 from collections import Counter
 import emoji
-import string
+from get_data import get_db_connection
+
+def fetch_data(conn):
+    if not conn:
+        return
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT message_id, user_id, content, channel_id, created_at FROM messages;")
+    except Exception as e:
+        print(f"データ取得中にエラーが発生しました: {e}")
+
+if __name__ == "__main__":
+    connection = get_db_connection()
+    fetch_data(connection)
 
 # .envファイルから環境変数を読み込む
 load_dotenv()
@@ -29,14 +42,53 @@ client = discord.Client(intents=intents)  # どのイベントを扱えるか
 # MeCab Taggerの初期化
 mecab = MeCab.Tagger()
 
-# テスト用の文章リスト（textsの下にtexts.txtというファイルを作って好きな文を入れてね）
-with open("/app/texts/texts.txt", 'r', encoding='utf-8') as f:
-    texts = f.read().splitlines()
+# データベースからメッセージ内容を取得してリストに入れる
+def get_messages(conn):
+    if not conn:
+        return []
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT content FROM messages WHERE content IS NOT NULL AND content != '';")
+            rows = cur.fetchall()
+            return [row[0] for row in rows if row[0].strip()]  # 空でないコンテンツのみ
+    except Exception as e:
+        print(f"メッセージ取得中にエラーが発生しました: {e}")
+        return []
+    finally:
+        if conn:
+            conn.close()
+            print("\n🐘 データベース接続を閉じました。")
 
 # 結果格納用
 data = []
 
-for sentence in texts:
+# データベースからメッセージを取得
+messages = get_messages(connection)
+if not messages:
+    print("データベースからメッセージが取得できませんでした。")
+    exit(1)
+
+# 絵文字と記号・文章をあらかじめ分ける
+def separate_by_type(messages):
+    text_list = []
+    emoji_list = []
+    
+    for sentence in messages:
+        texts = []
+        emojis = []
+        for char in sentence:
+            if emoji.is_emoji(char):
+                emojis.append(char)
+            elif  not char.isspace(): # 空白文字は無視
+                texts.append(char)
+
+        text_list.append("".join(texts))
+        emoji_list.append("".join(emojis))
+
+    return text_list, emoji_list
+text_list, emoji_list = separate_by_type(messages)
+
+for sentence in text_list:
     words, roots, parts = [], [], []
     node = mecab.parseToNode(sentence) # nodeは文節のこと
     while node:
